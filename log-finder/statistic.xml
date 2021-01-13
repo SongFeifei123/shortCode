@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<statistic>
+    <infile>test.log</infile><outfile>test.outlog</outfile>
+</statistic>

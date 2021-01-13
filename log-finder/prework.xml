@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modules>
+    <module>
+        <string>LOG_OBJ</string>
+        <level>INFO</level><outfile>info.txt</outfile>
+        <level>WARNING</level><outfile>warning.txt</outfile>
+        <!--<level>ERR</level><outfile>err.txt</outfile>-->
+    </module>
+    <module>
+        <string>KVLOG</string>
+        <level>INFO</level><outfile>info.txt</outfile>
+        <level>WARNING</level><outfile>warning.txt</outfile>
+        <!--<level>ERR</level><outfile>err.txt</outfile>-->
+    </module>
+</modules>
