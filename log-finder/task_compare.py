@@ -1,5 +1,6 @@
 import task_common
 import json
+import sys
 class comparetask(task_common.task):
     def getconfig(self):
         self.name = "comparetask"
@@ -39,6 +40,12 @@ class comparetask(task_common.task):
         self.rightfiles = []
         for file in rightfiles:
             self.rightfiles.append(file.nodename)
+
+    def cmdconfig(self):
+        self.name = "compare task"
+        if len(self.infiles) != 2:
+            print("Compare task need 2 infile, curinfile:{}".format(len(self.infiles)))
+            exit(0)
 
     def getDict(self, file):
         with open(file, 'r') as json_file:
@@ -83,6 +90,8 @@ class comparetask(task_common.task):
                 result.append(elog)
 
     def findDifferent(self, corr, err):
+        corr = sorted(corr)
+        err = sorted(err)
         reseult = []
         while True:
             cIdx = 0
@@ -95,8 +104,8 @@ class comparetask(task_common.task):
                 clogs = self.getSameFuncInDict(corr[cIdx])
                 elogs = self.getSameFuncInDict(err[eIdx])
                 self.appendDiffLogs(clogs, elogs, reseult)
-                cIdx+=len(clogs)
-                eIdx+=len(elogs)
+                cIdx += len(clogs)
+                eIdx += len(elogs)
             elif cfunc > efunc:
                 reseult.append(err[eIdx])
                 eIdx += 1
@@ -108,12 +117,29 @@ class comparetask(task_common.task):
             eIdx += 1
         return  reseult
 
+    def delSame(self, dict1, dict2):
+        for item in dict1:
+            if dict2.has_key(item.key):
+                del dict1[item.key]
+                del dict2[item.key]
+
     def dowork(self):
+        if not self.useconfig:
+            dict1 = self.getDict(self.infiles[0])
+            dict2 = self.getDict(self.infiles[1])
+            self.delSame(dict1, dict2)
+            if self.outfiles[0] != 'screen':
+                fd  = open(self.outfile[0], 'w+')
+            else:
+                fd = sys.stdout
+            fd.writelines('file1:')
+            json.dump(dict1, fd, indent=1)
+            fd.writelines('file2:')
+            json.dump(dict2, fd, indent=1)
+
         for idx in range(1,len(self.rightfiles)):
             correctDict = self.getDict(self.rightfiles[idx])
             errorDict   = self.getDict(self.errfiles[idx])
-            corrSorted  = sorted(correctDict)
-            errSorted   = sorted(errorDict)
-            result      = self.findDifferent(corrSorted, errSorted)
+            result      = self.findDifferent(correctDict, errorDict)
             fd          = self.openoutfile(self.outfiles[idx])
             json.dump(result, fd, indent=1)

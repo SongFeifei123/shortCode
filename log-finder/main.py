@@ -7,6 +7,7 @@ import task_common
 import task_compare
 import task_prework
 import task_statistic
+import argparse
 
 def printhelper():
     print("used ERR")
@@ -17,7 +18,7 @@ def maketask(argv):
 
 
 # Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+if __name__ == '__task__':
     task = task_statistic.statistictask('statistic.xml')
     task.exec()
 
@@ -26,5 +27,29 @@ if __name__ == 'noth':
         printhelper()
     task = maketask(sys.argv)
     task.exec()
+
+if __name__ == "__main__":
+    parse = argparse.ArgumentParser(description='aikv log tool')
+    parse.add_argument('-pwork', action='store_const', default='xml', dest='work', const='prework', help='Pre work only')
+    parse.add_argument('-stat', action='store_const', default='xml', dest='work', const='statistic', help='Statistic work only')
+    parse.add_argument('-cmp', action='store_const', default='xml', dest='work', const='compare', help='statistic work only')
+    parse.add_argument('-infile', nargs='?', help='infile,default: infile.log', default='infile.log')
+    parse.add_argument('-outfile', nargs=1, help='outfile, default: outfile.log', default='screen')
+    parse.add_argument('-thread', nargs=1, type=int, default=1, help='multi thread')
+
+    args = parse.parse_args()
+    worktype = args.work[0]
+    if worktype == 'xml':
+        task = task_prework.preworktask('prework.xml')
+    elif worktype == 'prework':
+        task = task_prework.preworktask(args.infile, args.outfile[0])
+    elif worktype == 'statistic':
+        task = task_statistic.statistictask(args.infile, args.outfile[0])
+    elif worktype == 'compare':
+        task = task_compare.comparetask(args.infile, args.outfile[0])
+    task.exec()
+
+
+
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

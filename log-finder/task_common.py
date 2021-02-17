@@ -1,6 +1,7 @@
 import xml.dom.minidom
 import tarfile
 import re
+import memctl
 import os
 
 readline = 1000
@@ -9,18 +10,19 @@ def openwritefile(file):
     return open(file, 'w+')
 
 class task:
-    def __init__(self, name, type, infiles, modules, outputtype, outfiles):
-        self.name = name
-        self.type = type
-        self.infiles = infiles
-        self.outfiles = outfiles
-        self.modules = modules
-        self.outputtype = outputtype
-        self.next = None
-
     def __init__(self, configfile):
         self.next = None
-        self.infiles = [configfile]
+        self.xml = configfile
+        self.infiles = []
+        self.outfiles = []
+        self.results = None
+        self.useconfig = True
+
+    def __init__(self, infile, outfile):
+        self.next = None
+        self.infiles = infile
+        self.outfiles = [outfile]
+        self.useconfig = False
 
     def getFuncByline(self, line):
         return line.split()[3]
@@ -47,8 +49,11 @@ class task:
             return self.opentar(file)
         else:
             return self.openfile(file)
+
     def openoutfile(self):
         self.outfds = [0]  #第一个字符填0,目的是跳过第一个元素，以匹配modules的level
+        self.outlines = [""]
+        lines = list()
         for module in self.modules:
             for i in [1, 2, 3]:
                 fd = None
@@ -59,11 +64,13 @@ class task:
                     if fd == None:
                         fd = open(module[i + 3])
                 self.outfds.append(fd)
+                self.outlines.append(lines)
 
     def closeoutfile(self):
         for fd in self.outfds:
             if fd != None:
                 fd.close()
+
     def genSubTask(self, root):
         subtask = root.getElementsByTagName('subtask')
         if len(subtask) == 0:
@@ -75,9 +82,9 @@ class task:
         eval(cmd)
 
     def getxml(self):
-        if self.infiles == None:
+        if self.xml == None:
             assert(0)
-        dom = xml.dom.minidom.parse(self.infiles[0])
+        dom = xml.dom.minidom.parse(self.xml)
         root = dom.documentElement
         return root
 
@@ -104,6 +111,9 @@ class task:
     def getconfig(self):
         pass
 
+    def cmdconfig(self):
+        pass
+
     def dowork(self):
         pass
 
@@ -112,7 +122,10 @@ class task:
             self.next.exec()
 
     def exec(self):
-        self.getconfig()
+        if self.useconfig:
+            self.getconfig()
+        else:
+            self.cmdconfig()
         self.dowork()
         self.dosubtask()
 

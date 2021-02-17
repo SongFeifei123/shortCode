@@ -1,6 +1,7 @@
 import task_common
 import os
 
+MAX_CACHE_LINE = 100
 
 outdir = os.getcwd() + '/prework'
 
@@ -41,6 +42,13 @@ class preworktask(task_common.task):
         self.modules = group
         # end modules
         self.next = task_common.task(self.getSubTaskCfg(root))
+
+    def writefile(self, line, i):
+        if len(self.outlines[i]) == MAX_CACHE_LINE:
+            self.outfds[i].writelines(self.outlines[i])
+
+        self.outlines[i].append(line)
+
 
     def filterAndWrite(self, line):
         for module in self.modules:
