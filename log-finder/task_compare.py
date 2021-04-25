@@ -125,6 +125,8 @@ class comparetask(task_common.task):
 
     def dowork(self):
         if not self.useconfig:
+            if len(self.infiles) != 2:
+                print("cmp should input -infile file1 file2")
             dict1 = self.getDict(self.infiles[0])
             dict2 = self.getDict(self.infiles[1])
             self.delSame(dict1, dict2)
@@ -136,10 +138,11 @@ class comparetask(task_common.task):
             json.dump(dict1, fd, indent=1)
             fd.writelines('file2:')
             json.dump(dict2, fd, indent=1)
-
-        for idx in range(1,len(self.rightfiles)):
-            correctDict = self.getDict(self.rightfiles[idx])
-            errorDict   = self.getDict(self.errfiles[idx])
-            result      = self.findDifferent(correctDict, errorDict)
-            fd          = self.openoutfile(self.outfiles[idx])
-            json.dump(result, fd, indent=1)
+        else:
+            self.getconfig()
+            for idx in range(1,len(self.rightfiles)):
+                correctDict = self.getDict(self.rightfiles[idx])
+                errorDict   = self.getDict(self.errfiles[idx])
+                result      = self.findDifferent(correctDict, errorDict)
+                fd          = self.openoutfile(self.outfiles[idx])
+                json.dump(result, fd, indent=1)
